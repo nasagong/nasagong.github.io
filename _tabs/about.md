@@ -3,6 +3,24 @@
 icon: fas fa-info-circle
 order: 4
 ---
+## 🛠 Role
+**Developer**
 
-> Add Markdown syntax content to file `_tabs/about.md`{: .filepath } and it will show up on this page.
-{: .prompt-tip }
+## 💡 Tech & Tools
+### 📌 Language
+- Java (Spring Boot)
+- Go
+- React
+
+### 📌 Data Solution
+- Oracle
+- Redis
+- Elasticsearch
+
+### 📌 Data Engineering
+- Kafka
+
+### 📌 Platform
+- GCP
+- Kubernetes
+
