@@ -4,7 +4,7 @@ description: experience about IG bug bounty
 author: nasagong
 date: 2025-02-26 11:10:00 +0800
 categories: [Misc]
-tags: [Spring, NestJs]
+tags: [Web]
 render_with_liquid: false
 ---
 
