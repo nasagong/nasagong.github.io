@@ -8,108 +8,176 @@ tags: [Web]
 render_with_liquid: false
 ---
 
-> ### This article is currently being translated
+> No paid content has been exposed in this article. 
 
-> ## 본 아티클에는 유료 콘텐츠가 노출되지 않았습니다. 
-> ## 유료 콘텐츠 탈취 조장을 위함이 아닌 단순 기술적 흥미에 기반한 글입니다.<br/>
+> This post is purely based on technical curiosity, not intended to encourage the piracy of paid content.<br/>
+
 
 ## 0. Intro
 
-
 ![](/assets/img/2025-02-26-16-06-02.png)
 
-저는 인스타그램을 자주 사용하는 편인데, 그 중에서도 직접적인 피드 게시 기능은 사용하지 않고 스토리 게시 기능을 주로로 사용하고 있습니다. 
-PC로 인스타그램을 사용해보신 개발자 분들은 많이들 알고 계시겠지만, 인스타그램 스토리나 피드의 원본 파일을 확보하는 건 굉장히 쉬운 일입니다. 실제로 많은 서드파티 앱들이 다른 계정의 미디어를 다운받는 기능을 제공하고 있습니다.
+I use Instagram pretty often, but I mostly stick to posting Stories rather than directly uploading to the feed.  
+If you’ve ever tried using Instagram on PC, you probably know this already — grabbing the original files for Stories or Feed posts is ridiculously easy.  
+In fact, there are tons of third-party apps out there that let you download media from other accounts.
 
-위에 첨부한 사진만 보셔도 단순히 devtools로 원본 이미지의 URL 경로를 확인할 수 있습니다. 
+Just from the screenshot above, you can see that you can simply open DevTools and check the URL path of the original image.
 
-## 1. 인스타그램 유료 구독 시스템
+## 1. Instagram’s Paid Subscription System
 
 ![](/assets/img/2025-02-26-16-09-13.png)
 
-비교적 최근 인스타그램은 유료 구독 시스템을 도입했습니다. 최근 다양한 형태의 구독 플랫폼이 등장하고 있다보니 그 파이를 조금 얻어보고자 도입한 게 아닌가 싶은데요, PC로 인스타그램을 이용하던 중 문득 이러한 유료 구독 컨텐츠들도 다른 일반적인 인스타그램 미디어 파일들 처럼 쉽게 원본 URL을 확보할 수 있는지 궁금해졌습니다.
+Fairly recently, Instagram rolled out a paid subscription system.  
+With so many different subscription platforms popping up these days, I guess Instagram wanted a piece of the pie too.  
+While using Instagram on PC, I suddenly got curious —  
+is it just as easy to grab the original URLs for paid subscription content as it is for regular media?
 
 ![](/assets/img/2025-02-26-16-18-52.png)
 
-확인 결과 모바일 환경에서는 유료 미디어에 대한 캡쳐/녹화를 시도할 경우 넷플릭스처럼 검은 화면으로 대체되는 캡쳐 방지 장치를 도입해둔 것으로 확인이 됐습니다 (저작권 상 실제 캡쳐 자료를 공유할 수 없음을 양해 부탁드립니다) 그렇다면 PC에서는 어떤 장치가 도입 돼있을까요? 가능한 건전한 유료 구독 계정을 찾아 PC 환경에서 테스트를 진행해봤습니다.
+Turns out, on mobile, if you try to screenshot or screen-record paid media,  
+there’s a Netflix-style capture protection system in place that just replaces everything with a black screen.  
+(Sorry, can’t share actual capture samples here due to copyright reasons.)  
+But then, what about on PC?  
+I found a legit paid subscription account and ran some tests on a desktop environment.
 
-### 이미지의 경우
+
+### In the Case of Images
 
 ![](/assets/img/2025-02-26-16-24-49.png)
 
-이미지의 경우 공개된 스토리와 마찬가지로 생성된 cdn url 에 접속해보니 원본 파일을 확보할 수 있었습니다. 아예 어떤 토큰 정보도 담겨있지 않은 raw http 요청을 보내봐도 문제 없이 원본 이미지를 응답값으로 받을 수 있었습니다.
+For images, just like with public Stories, I was able to access the original file by hitting the generated CDN URL.  
+Even when I sent a raw HTTP request without any token information attached,  
+the server still responded with the original image without any problems.
 
-### 비디오의 경우
+### In the Case of Videos
 
 ![](/assets/img/2025-02-26-16-26-54.png)
 
-비디오의 경우 구글링을 해보니 2022년도 까지는 이미지처럼 바로 소스에 원본 이미지가 표시됐다고 하는데, 확인해보니 현재는 해당 방식이 동작하지 않았습니다. 아마 Stream 형태로 다수의 이미지 청크를 받고 있을 것이라 추측되어 devtools 의 network탭 fetch/XHR 필터를 적용해보니 실제로 여러 비디오 청크들이 fetching 되고 있는 것을 확인할 수 있었습니다.
+As for videos —  
+a bit of Googling showed that up until around 2022, the original video sources were directly exposed just like images.  
+But when I checked now, that method no longer worked.  
+I figured they might be streaming the video as chunks instead,  
+so I opened DevTools, switched the network filter to Fetch/XHR, and sure enough,  
+I could see multiple video chunks being fetched.
 
-크기 순으로 정렬하여 가장 큰 요청의 Request URL 헤더를 확인해보니 역시나 cdn 서버로 요청을 보내고 있음이 확인 됐습니다. 당연하지만 스트림으로 받아오고 있기에 해당 URL로 바로 GET을 날리면 아래처럼 빈 비디오만 표시됩니다.
+After sorting the requests by size and checking the Request URL of the biggest one,  
+it turned out they were indeed coming from a CDN server.
+
+Of course, since the videos are streamed,  
+just firing a simple GET request at that URL gives you an empty or broken video like this:
 
 ![](/assets/img/2025-02-26-16-30-32.png)
 
-워낙에 URL이 복잡하다보니 [URL파서](https://www.freeformatter.com/url-parser-query-string-splitter.html)를 사용해서 보다 쉽게 읽어봤습니다.
+The URL was super messy, so I used a [URL parser](https://www.freeformatter.com/url-parser-query-string-splitter.html) to make it easier to read.
 
 ![](/assets/img/2025-02-26-16-32-37.png)
 
-쿼리 스트링을 확인해보니 너무나도 매력적으로 보이는 bytestart / byteend를 찾을 수 있었습니다.
-예상한 대로 해당 두 파라미터를 삭제하니 원본 풀 영상에 접근 및 저장이 가능했습니다.
-이미지와 마찬가지로 샌드박스 환경에서의 RAW HTTP 요청에도 미디어를 반환했습니다.
+Digging into the query string, I found some very promising parameters: `bytestart` and `byteend`.  
+As expected, deleting those two parameters gave me access to the full original video for download.
 
-## 2. 의문
+Just like with images, even in a sandbox environment,  
+sending a raw HTTP request to the URL successfully returned the full media.
 
-일단 이러한 접근이 인스타그램에서 의도한 설계라는 것은 너무나 자명했습니다. 제가 찾을 수 있을 정도의 간단한 설계 미스를
-메타에서 저지른다는 건 현실성이 크게 떨어지는 이야기이기 때문입니다.. 다만 유료 미디어의 원본 확보가 이렇게 쉽다면 비구독자들을 대상으로 한
-유출이 너무나도 쉬워지고, 크리에이터의 권리도 일부 침해되는 게 아닌가 하는 막연한 생각이 들었습니다. 거기다 모바일 환경에서는 단순 스크린샷까지 통제하고 있다는 걸 확인한 상태라 더욱 의문이었습니다.
 
-저는 당연히 생성된 URL에 접근하기 위해선 로그인 정보를 담고 있는 토큰이 필요하지 않을까 생각했지만, 비로그인 상태에서도 쉽게 접근할 수 있다는 게 조금 의문이었습니다.
-메타의 보안 관계자에게 직접 질의할 수 있다면 좋겠지만 그런 기회를 잡기란 쉬운 게 아니다보니 혼자 구글링이나 AI를 사용해 고민을 거듭하던 중 버그바운티를 떠올리게 됐습니다.
-당연히 유효한 버그가 아니란 건 알고 있지만.. 개인적인 호기심 해결을 위해 보안팀에겐 미안한 일이지만 한 번 보고서를 작성해 문의해봐야 겠다는 생각을 하게 됐습니다.
+## 2. Question
 
-보안 쪽에 종사 중인 지인들에게 물어봐도 아무렴 일단 던져보라는 답변을 들어 호기롭게 리포팅을 결심했습니다.
+It was pretty obvious that this setup was intentional by Instagram.  
+It’s just not realistic to think that Meta would miss something this simple in their design...  
+Still, if getting the original media for paid content is this easy,  
+it feels like it opens the door for non-subscribers to leak content,  
+which could end up partially violating creators' rights.  
+Especially since I had already confirmed that on mobile, even basic screenshots are blocked — it made me even more curious.
 
-## 3. 리포팅
+At first, I assumed that accessing the generated URL would require some kind of token tied to a logged-in session.  
+But being able to pull it off so easily without logging in felt strange.
+
+Of course, it’s not like I could easily reach out to Meta’s security team directly.  
+So while digging around with Google and AI tools on my own,  
+I eventually thought of bug bounty programs.
+
+Obviously, I knew this wouldn't really qualify as a valid security bug...  
+But still, for the sake of satisfying my own curiosity — even if it might be a bit annoying for their security team —  
+I decided to go ahead and try writing up a report.
+
+When I asked a few friends working in security about it,  
+they basically told me, “Eh, just send it and see what happens,”  
+so I decided to go for it.
+
+
+## 3. Reporting
 
 ![](/assets/img/2025-02-26-16-42-23.png)
 
-빅테크답게 삐까뻔쩍한 버그 바운티 페이지가 존재했습니다. 리포트 제출 버튼을 눌러 보고 페이지에 들어간 후 간단한 PoC를 작성하여 리포트했습니다.
+As you’d expect from a big tech company, Meta has a flashy official bug bounty page.  
+I clicked the report submission button, wrote up a simple PoC, and sent in my report.
 
-## 4. 결과
+## 4. Result
 
-너무 사소한 문의라 그런지 생각보다 빠르게 답변을 받을 수 있었습니다.
+Maybe because it was such a minor issue, I got a response way faster than I expected.
 
 ![](/assets/img/2025-02-26-16-47-28.png)
 
-요약하자면 의도된 동작이 맞고, 본인들이 막을 수 있는 영역이 아니며, 해당 URL을 생성할 수 있는 유저는 열람 권한이 있는 유저로 국한되기에 문제가 되지 않는다는 답변을 받았습니다.
-열람한 시점에서 보안적인 요소를 도입해 저장을 막을 수는 있겠지만 사용자는 무슨 수를 써서라도 파일을 확보할 수 있기 때문에 사실 어쩔 수 없는 거라곤 생각했지만 예상보다 쿨하게 답변해주셔서 조금 신기했습니다.
-어떻게 보면 어차피 막을 수 없는 부분이기에 제가 생각했던 cdn 보안 기능을 도입하는 건 유저 경험 악화와 더 많은 유지비용 지출만 유도하는 게 아닐까 하는 생각도 들었습니다.
+Long story short:  
+they told me this was intended behavior,  
+that it’s not something they can (or are trying to) block,  
+and that since only users with permission can generate those URLs, it’s not a security problem.
 
-이 경험을 통해 결국 서비스 보안 설계에서 완벽한 보호는 현실적으로 불가하며, 효율적인 트레이드 오프가 더 중요하다는 점을 깨닫게 되었습니다.
-생각해보면 cdn에서 유료 파일을 서빙할 때 어떤 검증도 하지 않는다는 점을 허술한 보안 문제라고 인식했지만, 의도된 설계임을 알게된 후엔 충분히 납득이 갔습니다.
-이처럼 서비스를 운영할 때는 보안 강도와 UX, 경제적 요소 세 가지의 균형을 맞추는 게 요점이 되지 않을까 하는 생각도 들었고요.
+Sure, once a user has access, you could try to add technical barriers to stop them from saving the file,  
+but realistically, if someone really wants the file, they'll always find a way to get it anyway.  
+Still, the way they responded so casually and openly was kind of surprising.
 
-가령 제 처음 생각처럼 보안을 강화한다면 CDN 마다 Oauth 토큰을 강제하거나 IP 제한을 걸어 세션 단위 통제를 하는 방법도 있을테지만
-이런 솔루션을 도입한다면 트래픽당 검증 오버헤드가 커지고, 인스타그램의 트래픽은 제 예상을 아득히 뛰어넘을테니 현실성이 없는 솔루션 같습니다.
+Thinking about it more —  
+even if they had beefed up CDN security like I initially imagined,  
+it probably would’ve just worsened the user experience and massively increased maintenance costs.
+
+From this experience, I realized that in service security design,  
+**perfect protection is basically impossible** and **making efficient trade-offs matters way more**.
+
+At first, I thought it was bad security practice that the CDN served paid files without extra verification.  
+But after realizing it was an intentional design choice, it made a lot more sense.
+
+When you’re running a service like this,  
+you have to balance security strength, user experience, and cost efficiency.
+
+For example, if you really wanted to tighten security,  
+you could force OAuth tokens for every CDN request or add IP-based session control.  
+But honestly, with Instagram’s scale,  
+the overhead per request would skyrocket,  
+and the traffic would be on a whole different level — not really practical.
 
 ![](/assets/img/2025-02-26-16-58-37.png)
 
-또한 CDN 캐싱도 적극적으로 활용할 수 없게 되어 UX가 확연히 나빠질 것 같기도 합니다.
+It would also kill a lot of the benefits of CDN caching,  
+and the overall UX would get noticeably worse.
 
-요컨대 인스타그램은 Dropbox나 다른 비공개 파일 저장소처럼 개인의 미디어를 타인에게서 보호하는 역할을 맡고 있지 않고,
-오히려 많은 이들이 미디어를 적극적으로 공유해야 수익으로 직결되기에 이러한 보호조치는 사실 투머치로 간주되는 게 당연한 것이었습니다.
+At the end of the day, Instagram isn’t trying to be a private file vault like Dropbox or something.  
+Their whole model relies on people actively sharing media to drive engagement and revenue.  
+From that perspective, it actually makes perfect sense that they don’t go overboard with protection.
 
-### 그렇다면 모바일은 왜 보호를 적용했을까?
 
-앞선 논지에 따르면 모바일 환경에서 컨텐츠를 보호하는 건 비용이 매우 싸기 때문에 이런 최소한의 조치를 했다고 추측이 되는데,
-확인해보니 모바일은 PC와 다르게 OS단에서 DRM을 적용하는 게 훨씬 쉽다고 합니다. 이 부분은 자료가 없어서 궁금하신 분들은
-FLAG_SECURE / ScreenCaptureProtection / Hardware-based DRM 을 키워드로 구글링해보시면 좋을 것 같습니다.
+### Then Why Is Mobile Protected?
 
-### 마치며 
+Following the previous logic,  
+it seems like the reason they apply protection on mobile is simply because it's way cheaper to do so.  
+After checking a bit more, it turns out that unlike PC environments,  
+applying DRM at the OS level on mobile is a lot easier.
 
-보안은 어깨 너머로만 구경해봤지 실제로 어떻게 보안을 위한 아키텍쳐가 구상되는지 늘 궁금증을 가지고 있었는데, 얕게나마 실무자의 의견을 알 수 있게 되어 꽤나 유익한 경험이었습니다.
-다만 실무자의 업무 경감을 위해 앞으로 개인적인 호기심은 스스로 해결해봐야 겠다는 다짐도 하게 되었습니다 . . . 
+I couldn’t find a great source to link here,  
+but if you're curious, you can Google around with keywords like  
+**FLAG_SECURE**, **ScreenCaptureProtection**, or **Hardware-based DRM**.
 
-## 참고자료
+### Closing Thoughts
+
+Until now, I’d only ever looked at security from a distance,  
+and I was always curious about how actual security architecture gets designed.  
+Through this experience — even if it was shallow —  
+I got a glimpse into how real practitioners think, and it was honestly pretty valuable.
+
+That said...  
+to save security teams some headaches,  
+I also made a little promise to myself to handle my personal curiosity on my own from now on...
+
+## References
+
 
 [How does netflix DRM work?](https://www.reddit.com/r/webdev/comments/3p8bos/how_does_netflix_drm_work/)
